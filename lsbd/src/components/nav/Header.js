@@ -36,53 +36,61 @@ const Header = () => {
       });
   };
 
+  const menuItems = [
+    {
+      label: (<Link to="/">Home</Link>),
+      key: "home",
+      icon: <AppstoreOutlined />,
+    },
+    // Define other menu items based on if the user is logged in or not.
+    ...(!user ? [
+      {
+        label: (<Link to="/register">Register</Link>),
+        key: "register",
+        icon: <UserAddOutlined />,
+        style: { float: 'right' },
+      },
+      {
+        label: (<Link to="/login">Login</Link>),
+        key: "login",
+        icon: <UserOutlined />,
+        style: { float: 'right' },
+      },
+    ] : []),
+    ...(user ? [
+      {
+        label: user.email && user.email.split("@")[0],
+        key: "SubMenu",
+        icon: <SettingOutlined />,
+        style: { float: 'right' },
+        children: [
+          ...(user.role === 'user' ? 
+          [{ label: <Link to="/user/history">History</Link>, key: "history" }] : 
+          []),
+
+          ...(user.role === 'admin' ? 
+          [{ label: <Link to="/admin/dashboard">Dashboard</Link>, 
+          key: "dashboard" }] : 
+          []),
+          
+          { label: 'Logout', 
+          key: 'logout', 
+          icon: <LogoutOutlined />, 
+          onClick: logout 
+          },
+        ],
+      },
+      {
+        label: (<a href="https://ant.design" target="_blank" rel="noopener noreferrer">Cart</a>),
+        key: "cart",
+        icon: <AppstoreOutlined />,
+        style: { float: 'right' },
+      },
+    ] : []),
+  ];
+
   return (
-    <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal">
-      <Menu.Item key="home" icon={<AppstoreOutlined />}>
-        <Link to="/">Home</Link>
-      </Menu.Item>
-
-      {!user && (
-        <Menu.Item key="register" icon={<UserAddOutlined />} style={{ float: 'right' }}>
-          <Link to="/register">Register</Link>
-        </Menu.Item>
-      )}
-
-      {!user && (
-        <Menu.Item key="login" icon={<UserOutlined />} style={{ float: 'right' }}>
-          <Link to="/login">Login</Link>
-        </Menu.Item>
-      )}
-
-      {user && (
-        <Menu.SubMenu
-          key="SubMenu"
-          icon={<SettingOutlined />}
-          title={user.email && user.email.split("@")[0]}
-          style={{ float: 'right' }}
-        >
-          {
-          (user) && 
-          (user.role === 'user') && 
-          (<Menu.Item key="setting:1"><Link to="/user/history"></Link>History</Menu.Item>)
-          }
-          {
-          (user) && 
-          (user.role === 'admin') && 
-          (<Menu.Item key="setting:1"><Link to="/admin/dashboard"></Link>Dashboard</Menu.Item>)
-          }
-          <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
-            Logout
-          </Menu.Item>
-        </Menu.SubMenu>
-      )}
-
-      <Menu.Item key="cart" icon={<AppstoreOutlined />} style={{ float: 'right' }}>
-        <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
-          Cart
-        </a>
-      </Menu.Item>
-    </Menu>
+    <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
   );
 };
 
