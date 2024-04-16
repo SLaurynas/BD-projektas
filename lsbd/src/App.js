@@ -18,6 +18,10 @@ import UserRoute from './components/routes/UserRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminRoute from './components/routes/AdminRoute';
 import CategoryCreate from './pages/admin/category/CategoryCreate';
+import CategoryUpdate from './pages/admin/category/CategoryUpdate';
+import SubCreate from './pages/admin/sub/SubCreate';
+import SubUpdate from './pages/admin/sub/SubUpdate';
+import ProductCreate from './pages/admin/product/ProductCreate';
 
 import { getAuth } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
@@ -94,6 +98,26 @@ const App = () => {
         <Route path="/admin/category" element={
         <AdminRoute>
           <CategoryCreate />
+        </AdminRoute>
+        }/>
+        <Route path="/admin/category/:slug" element={
+        <AdminRoute>
+          <CategoryUpdate />
+        </AdminRoute>
+        }/>
+        <Route path="/admin/sub" element={
+        <AdminRoute>
+          <SubCreate />
+        </AdminRoute>
+        }/>
+        <Route path="/admin/sub/:slug" element={
+        <AdminRoute>
+          <SubUpdate />
+        </AdminRoute>
+        }/>
+        <Route path="/admin/product" element={
+        <AdminRoute>
+          <ProductCreate />
         </AdminRoute>
         }/>
       </Routes>

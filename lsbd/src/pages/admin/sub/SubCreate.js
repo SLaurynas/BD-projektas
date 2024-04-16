@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import AdminNav from '../../../components/nav/AdminNav';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import { getCategories } from '../../../functions/category';
 import {
-    createCategory, 
-    getCategories, 
-    removeCategory
-}from "../../../functions/category" 
+    createSub, 
+    getSub, 
+    removeSub,
+    getSubs
+}from "../../../functions/sub" 
 import { 
     EditOutlined,
     DeleteOutlined 
@@ -15,31 +17,52 @@ import {
 import CategoryForm from '../../../components/forms/CategoryForm';
 import LocalSearch from '../../../components/forms/LocalSearch';
 
-const CategoryCreate = () =>{
-    const {user} = useSelector(state => ({...state}))
+const SubCreate = () =>{
+    const {user} = useSelector(state => ({...state}));
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
-
+    const [category, setCategory] = useState("");
     const [keyword, setKeyword] = useState("");
+    const [subs, setSubs] = useState([]);
 
     useEffect(() => {
         loadCategories();
+        loadSubs();
     },[])
 
     const loadCategories = () => 
-    getCategories().then((c) => {
-        setCategories(c.data)
-    })
+    getCategories().then((c) => setCategories(c.data));
+
+    const loadSubs = () => 
+    getSubs().then((s) => setSubs(s.data));
+
+    const handleSubmit = (e) =>{
+        e.preventDefault();
+        setLoading(true);
+
+        createSub({name, parent: category}, user.token)
+        .then((res) =>{
+            setLoading(false);
+            setName('');
+            toast.success(`"${res.data.name}" is created`);
+            loadSubs();
+        })
+        .catch(err =>{
+            console.log(err);
+            setLoading(false);
+            if(err.response.status === 400)toast.error(err.response.data);
+        })
+    }
 
     const handleRemove = async (slug) =>{
         if(window.confirm(`Delete ${slug}`)){
             setLoading(true)
-            removeCategory(slug, user.token)
+            removeSub(slug, user.token)
             .then(res => {
                 setLoading(false)
-                loadCategories();
                 toast.error(`${res.data.name} deleted`)
+                loadSubs();
             })
             .catch(err =>{
                 if (err.response.status === 400){
@@ -48,24 +71,6 @@ const CategoryCreate = () =>{
                 }
             })
         }
-    }
-
-    const handleSubmit = (e) =>{
-        e.preventDefault();
-        setLoading(true);
-
-        createCategory({name}, user.token)
-        .then(res =>{
-            setLoading(false);
-            setName('');
-            loadCategories();
-            toast.success(`"${res.data.name}" is created`)
-        })
-        .catch(err =>{
-            console.log(err);
-            setLoading(false);
-            if(err.response.status === 400)toast.error(err.response.data);
-        })
     }
 
     const searched = (keyword) => (c) => c.name.toLowerCase().includes(keyword)
@@ -78,7 +83,25 @@ const CategoryCreate = () =>{
                 </div>
                 {loading ? 
                 <h4 className='text-danger'>Loading..</h4> : 
-                <h4>Create Categoy</h4>}
+                <h4>Create Sub-categoy</h4>}
+
+                <div className='form-group'>
+                    <label>Parent category</label>
+                    <select 
+                    name='category' 
+                    className='form-control' 
+                    onChange={e => setCategory(e.target.value)}
+                    >
+                        <option>Please select</option>
+                        {categories.length > 0 && 
+                            categories.map((c)=>(
+                            <option key={c._id} value={c._id}>
+                              {c.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 <CategoryForm
                  handleSubmit={handleSubmit}
                  name={name}
@@ -90,7 +113,7 @@ const CategoryCreate = () =>{
                 setKeyword={setKeyword}
                 />
 
-                {categories.filter(searched(keyword)).map((c) => (
+                {subs.filter(searched(keyword)).map((s) => (
                 <div 
                 className='
                 alert 
@@ -99,14 +122,14 @@ const CategoryCreate = () =>{
                 justify-content-between 
                 align-items-center
                 '
-                key={c._id}
+                key={s._id}
                 >
-                {c.name}
-                    <div>
-                    <Link to={`/admin/category/${c.slug}`} className='btn btn-sm'>
+                {s.name}
+                    <div> 
+                    <Link to={`/admin/sub/${s.slug}`} className='btn btn-sm'>
                         <EditOutlined className="text-warning" />
                     </Link>
-                    <span className='btn btn-sm' onClick={() => handleRemove(c.slug)}>
+                    <span className='btn btn-sm' onClick={() => handleRemove(s.slug)}>
                         <DeleteOutlined className="text-danger" />
                     </span> 
                     </div>
@@ -117,4 +140,4 @@ const CategoryCreate = () =>{
     )
 }
 
-export default CategoryCreate;
+export default SubCreate;

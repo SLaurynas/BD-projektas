@@ -8,7 +8,7 @@ const AdminDashboard = () =>{
                 <div className='col-md-2'>
                 <AdminNav/>
                 </div>
-                <div className='col'>Hello, Mr. Alderson</div>
+                <div className='col'>Hello, Admin</div>
             </div>
     </div>
     )

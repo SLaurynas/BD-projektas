@@ -42,6 +42,11 @@ const Header = () => {
       key: "home",
       icon: <AppstoreOutlined />,
     },
+    {
+      label: (<a href="https://ant.design" target="_blank" rel="noopener noreferrer">Cart</a>),
+      key: "cart",
+      icon: <AppstoreOutlined />,
+    },
     // Define other menu items based on if the user is logged in or not.
     ...(!user ? [
       {
@@ -62,7 +67,6 @@ const Header = () => {
         label: user.email && user.email.split("@")[0],
         key: "SubMenu",
         icon: <SettingOutlined />,
-        style: { float: 'right' },
         children: [
           ...(user.role === 'user' ? 
           [{ label: <Link to="/user/history">History</Link>, key: "history" }] : 
@@ -80,17 +84,11 @@ const Header = () => {
           },
         ],
       },
-      {
-        label: (<a href="https://ant.design" target="_blank" rel="noopener noreferrer">Cart</a>),
-        key: "cart",
-        icon: <AppstoreOutlined />,
-        style: { float: 'right' },
-      },
     ] : []),
   ];
 
   return (
-    <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
+    <Menu className="float-left" onClick={handleClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
   );
 };
 
