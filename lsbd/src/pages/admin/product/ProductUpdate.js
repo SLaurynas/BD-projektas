@@ -2,52 +2,82 @@ import React, {useState, useEffect} from 'react'
 import AdminNav from '../../../components/nav/AdminNav';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import {createProduct}from "../../../functions/product"
-import ProductCreateForm from "../../../components/forms/ProductCreateForm"
+import { useNavigate, useParams } from 'react-router';
+import {getProduct, updateProduct}from "../../../functions/product"
 import {getCategories, getCategorySubs}from "../../../functions/category"
 import FileUpload from '../../../components/forms/FileUpload';
 import { LoadingOutlined } from '@ant-design/icons'
+import ProductUpdateForm from '../../../components/forms/ProductUpdateForm';
 
 const initialState = {
-        title: 'Auksinis moteriškas žiedas su natūraliu topazu ZUR0061',
-        description: 'Mokesčiai įtraukti. Siuntimo išlaidos apskaičiuojamos atsiskaitant.',
-        price: '320',
-        categories: [],
+        title: '',
+        description: '',
+        price: '',
         category: '',
         subs: [],
-        shipping: 'Yes',
-        weight: '3.7',
+        shipping: '',
+        weight: '',
         images: [],
         stones: ["Agate", "Amethyst", "Emerald", "Diamond", "Sapphire", "Topaz"],
         materials: ["Gold", "Silver"],
-        stone: 'Agate',
-        material: 'Gold',
+        stone: '',
+        material: '',
 }
 
-const ProductCreate = () => {
+const ProductUpdate = () => {
     const [values, setValues] = useState(initialState);
     const [subOptions, setSubOptions] = useState([]);
-    const [showSub, setShowSub] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [arrayOfSubIds, setArrayOfSubIds] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
+    //redux
     const {user} = useSelector((state)=>({...state}))
+    //router
+    let {slug} = useParams();
 
     useEffect(() => {
+        loadProduct();
         loadCategories();
     },[])
 
+    const loadProduct = () => {
+        getProduct(slug).then((p) => {
+            //console.log('single product' , p);
+            setValues({...values, ...p.data});
+            getCategorySubs(p.data.category._id).then((res) => {
+                setSubOptions(res.data); //show default subs on first load
+            });
+            let arr = [];
+            p.data.subs.map((s) => {
+                arr.push(s._id);
+            });
+            setArrayOfSubIds((prev) => arr);
+        });
+    };
+
     const loadCategories = () => 
-    getCategories().then((c) => setValues({...values, categories: c.data}));
+    getCategories().then((c) => {
+        setCategories(c.data);
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        createProduct(values, user.token)
+        setLoading(true);
+
+        values.subs = arrayOfSubIds; 
+        values.category = selectedCategory ? selectedCategory : values.category;
+
+        updateProduct(slug, values, user.token)
         .then((res) =>{
-            console.log(res);
-            window.alert(`${res.data.title} is created`);
-            window.location.reload();
+            setLoading(false);
+            toast.success(`${res.data.title} is updated`);
+            navigate('/admin/products');
         })
         .catch((err) =>{
+            setLoading(false);
             console.log(err);
             toast.error(err.response.data.err)
         })
@@ -60,14 +90,21 @@ const ProductCreate = () => {
     const handleCategoryChange = (e) => {
         e.preventDefault();
         console.log('CLICKED CATEGORY', e.target.value); 
-        setValues({...values, subs: [], category: e.target.value});
+        setValues({...values, subs: []});
+
+        setSelectedCategory(e.target.value);
+
         getCategorySubs(e.target.value).then((res) =>{
             console.log('SUB OPTIONS ON CATEGORY CLICK', res)
             setSubOptions(res.data);
         })
-        setShowSub(true);
+        //remember original category and load if clicked
+        if(values.category._id === e.target.value){
+            loadProduct();
+        }
+        setArrayOfSubIds([]);
     }
-     
+
     return(
         <div className='container-fluid'>
             <div className='row'>
@@ -78,8 +115,7 @@ const ProductCreate = () => {
             <div className='col-md-10'>
             {loading ? 
             <LoadingOutlined className='text-danger h1'/> : 
-            <h4>Product Create</h4>}
-            <hr></hr>
+            <h4>Product Update</h4>}
 
             <div className="p-3">
                 <FileUpload 
@@ -88,20 +124,24 @@ const ProductCreate = () => {
                 setLoading={setLoading}
                 />
             </div>
- 
-            <ProductCreateForm 
+
+            <ProductUpdateForm
             handleSubmit={handleSubmit}
             handleChange={handleChange}
             setValues={setValues}
             values={values}
             handleCategoryChange={handleCategoryChange}
+            categories={categories}
             subOptions={subOptions}
-            showSub={showSub}
+            arrayOfSubIds={arrayOfSubIds}
+            setArrayOfSubIds={setArrayOfSubIds}
+            selectedCategory={selectedCategory}
             />
+ 
             </div>
             </div>
         </div>
     )
 }
 
-export default ProductCreate;
+export default ProductUpdate;
