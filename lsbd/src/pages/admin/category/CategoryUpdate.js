@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AdminNav from '../../../components/nav/AdminNav';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
@@ -7,10 +7,6 @@ import {
     getCategory,
     updateCategory
 } from "../../../functions/category";
-import { 
-    EditOutlined,
-    DeleteOutlined 
-} from '@ant-design/icons';
 import CategoryForm from '../../../components/forms/CategoryForm';
 
 const CategoryUpdate = () => {

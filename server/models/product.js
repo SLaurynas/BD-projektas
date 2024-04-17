@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
         type: String,
         trim: true,
         required: true,
-        maxlength: 32,
+        maxlength: 200,
         text: true,
     },
     slug: {
@@ -37,25 +37,25 @@ const productSchema = new mongoose.Schema({
         ref: "Sub",
     },
     ],
-    quantity: Number,
+    weight: Number,
     sold: {
         type: Number,
         default:0
     },
-    // images: {
-    //     type: Array,
-    // },
+    images: {
+        type: Array,
+    },
     shipping: {
         type: String,
         enum: ["Yes", "No"],
     },
-    color: {
+    stone: {
         type: String,
-        enum: ["Black", "Brown", "White", "Silver", "Blue"],
+        enum: ["Agate", "Amethyst", "Emerald", "Diamond", "Sapphire", "Topaz"],
     },
-    brand: {
+    material: {
         type: String,
-        enum: ["Apple", "Samsung", "Microsoft", "Lenovo", "Asus"],
+        enum: ["Gold", "Silver"],
     },
     //ratings: [
     //    {

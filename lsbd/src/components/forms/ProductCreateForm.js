@@ -1,6 +1,17 @@
 import React from 'react'
+import {Select} from 'antd'
 
-const ProductCreateForm = ({handleSubmit, handleChange, values, handleCategoryChange}) => {
+const {Option} = Select;
+
+const ProductCreateForm = ({
+    handleSubmit, 
+    handleChange,
+    setValues,
+    values, 
+    handleCategoryChange,
+    subOptions,
+    showSub,
+}) => {
 
         //destructure
         const {
@@ -11,12 +22,12 @@ const ProductCreateForm = ({handleSubmit, handleChange, values, handleCategoryCh
             category, 
             subs, 
             shipping, 
-            quantity,  
+            weight,  
             images, 
-            colors,
-            brands, 
-            color, 
-            brand
+            stones,
+            materials, 
+            stone, 
+            material
         } = values;
     
     return(
@@ -68,43 +79,43 @@ const ProductCreateForm = ({handleSubmit, handleChange, values, handleCategoryCh
                 </div>
 
                 <div className='form-group'>
-                    <label>Quantity</label>
+                    <label>Weight</label>
                     <input 
                     type="number" 
-                    name="quantity" 
+                    name="weight" 
                     className='form-control' 
-                    value={quantity} 
+                    value={weight} 
                     onChange={handleChange}
                     />
                 </div>
 
                 <div className='form-group'>
-                    <label>Color</label>
+                    <label>Stone</label>
                     <select 
-                    name="color"
+                    name="stone"
                     className="form-control"
                     onChange={handleChange}
                     >
-                        <option>Select Color</option>
-                        {colors.map((c) => (
-                        <option key={c} value={c}>
-                            {c}
+                        <option>Select Stone</option>
+                        {stones.map((s) => (
+                        <option key={s} value={s}>
+                            {s}
                         </option>
                         ))}
                     </select>
                 </div>
 
                 <div className='form-group'>
-                    <label>Brand</label>
+                    <label>Material</label>
                     <select 
-                    name="brand"
+                    name="material"
                     className="form-control"
                     onChange={handleChange}
                     >
-                        <option>Select Brand</option>
-                        {brands.map((b) => (
-                        <option key={b} value={b}>
-                            {b}
+                        <option>Select Material</option>
+                        {materials.map((m) => (
+                        <option key={m} value={m}>
+                            {m}
                         </option>
                         ))}
                     </select>
@@ -127,6 +138,23 @@ const ProductCreateForm = ({handleSubmit, handleChange, values, handleCategoryCh
                     </select>
                 </div>
 
+                {showSub && <div>
+                <label>Sub-categories</label>
+                <Select
+                    mode="multiple"
+                    style={{width: '100%'}}
+                    placeholder="Please select"
+                    value={subs}
+                    onChange={value => setValues({...values, subs: value})}
+                >
+                    {subOptions.length && subOptions.map((s) => (
+                        <Option key={s._id} value={s._id}>
+                            {s.name}
+                        </Option>
+                    ))}
+                </Select>
+                </div>}
+                <br/>
                 <button className="btn btn-outline-info">
                     Save
                 </button>

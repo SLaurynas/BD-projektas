@@ -40,9 +40,12 @@ exports.remove = async (req, res) => {
     }
 }
 
-exports.getSubs = (req, res) => {
-    Sub.find({parent: req.params._id}).exec((err, subs) => {
-        if(err) console.log(err);
+exports.getSubs = async (req, res) => {
+    try {
+        const subs = await Sub.find({parent: req.params._id}).exec();
         res.json(subs);
-    });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error fetching sub-categories");
+    }
 }
