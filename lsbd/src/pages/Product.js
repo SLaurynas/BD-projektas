@@ -1,26 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import { getProduct } from '../functions/product';
+import { getProduct, productStar } from '../functions/product';
+import SingleProduct from '../components/cards/SingleProduct';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
-const Product = ({ match }) => {
+const Product = () => {
     const [product, setProduct] = useState({});
-
-    const { slug } = match.params;
+    const { slug } = useParams();
+    const [star, setStar] = useState(0);
+    const { user } = useSelector((state) => ({ ...state }));
 
     useEffect(() => {
-        const loadSingleProduct = async () => {
-            try {
-                const res = await getProduct(slug);
-                setProduct(res.data);
-            } catch (error) {
-                console.error("Failed to fetch product:", error);
-                // Optionally, update the state to show an error message or a fallback UI
-            }
-        };
-
         loadSingleProduct();
-    }, [slug]); // dependency array ensures this effect runs only when `slug` changes
+    }, [slug]);
 
-    return <>{JSON.stringify(product)}</>;
+    const loadSingleProduct = () =>
+    getProduct(slug).then((res) => setProduct(res.data));
+
+    const onStarClick = (newRating, name) => {
+        setStar(newRating);
+        productStar(name, star, user.token)
+        .then((res) => {
+            console.log('Rating clicked ', res.data);
+            loadSingleProduct();
+        });
+    }
+
+    return (
+        <div className='container-fluid'>
+            <div className='row pt-4'>
+                <SingleProduct 
+                    product={product} 
+                    onStarClick={onStarClick} 
+                    star={star}
+                />
+            </div>
+            <div className='row'>
+                <div className='col text-center pt-5 pb-5'>
+                    <hr/>
+                    <h4>
+                        Related Products
+                    </h4>
+                    <hr/>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default Product;
+
