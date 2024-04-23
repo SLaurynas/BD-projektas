@@ -120,28 +120,28 @@ exports.productsCount = async(req, res) => {
 exports.productStar = async (req, res) => {
     const product = await Product.findById(req.params.productId).exec();
     const user = await User.findOne({email: req.user.email}).exec();
-    const {star} = req.body
+    const { star } = req.body;
 
     let existingRatingObject = product.ratings.find(
-        (ele) => (ele.postedBy.toString() === user._id.toString())
-    )
+        (ele) => ele.postedBy.toString() === user._id.toString()
+    );
 
-    if(existingRatingObject === undefined){
+    if (existingRatingObject === undefined) {
+        // Corrected the field name to 'ratings'
         let ratingAdded = await Product.findByIdAndUpdate(product._id, {
-            $push: { rating: {star, postedBy: user._id}},
-        }, 
-        {new: true})
-        .exec();
+            $push: { ratings: { star, postedBy: user._id } },
+        }, { new: true }).exec();
         console.log("ratingAdded", ratingAdded);
         res.json(ratingAdded);
     } else {
-        const ratingUpdated = await Product.updateOne(
-            {ratings: {$elemMatch: existingRatingObject},
-        }, 
-        {$set: {'ratings.$.star': star}},
-        {new: true}
-    ).exec();
-    console.log("ratingUpdated", ratingUpdated);
-    res.json(ratingUpdated);
+        // Update the existing rating
+        const ratingUpdated = await Product.updateOne({
+            _id: product._id,
+            'ratings._id': existingRatingObject._id, // Correctly target the specific rating
+        }, {
+            $set: { 'ratings.$.star': star }, // Update the star value in the existing rating
+        }, { new: true }).exec();
+        console.log("ratingUpdated", ratingUpdated);
+        res.json(ratingUpdated);
     }
-}
+};
