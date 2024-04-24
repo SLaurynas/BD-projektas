@@ -191,30 +191,37 @@ const handlePrice = async (req, res, price) => {
     }
 }
 
-const handleStar = async (req, res, stars) => {
-    Product.aggregate([{
-        $project: {
-            document: "$$ROOT",
-            floorAverage: {
-                $floor: { $avg: "$ratings.star"},
+const handleStar = async (req, res) => {
+    try {
+        const stars = req.body.stars;  // Ensure you are getting 'stars' from the request correctly
+        const aggregates = await Product.aggregate([
+            {
+                $project: {
+                    document: "$$ROOT",
+                    floorAverage: {
+                        $floor: { $avg: "$ratings.star" }
+                    }
+                }
             },
-        },
-    },
-    {$match: {floorAverage: stars} }
-])
-.limit(12)
-.exec((err, aggregates) => {
-    if(err) console.log('AGGREGATES ERROR', err)
-    Product.find({_id: aggregates})
-    .populate("category", "_id name")
-    .populate("subs", "_id name")
-    //.populate("postedBy", "_id name")
-    .exec((err, products) => {
-        if(err) console.log('PRODUCT AGGREGATE ERROR', err)
-        res.json(products)
-    });
-})
-}
+            {
+                $match: { floorAverage: stars }
+            }
+        ]);
+
+        const productIds = aggregates.map(ag => ag._id);  // Assuming '_id' is included in the aggregation results
+
+        const products = await Product.find({ _id: { $in: productIds } })
+            .populate("category", "_id name")
+            .populate("subs", "_id name")
+            // .populate("postedBy", "_id name")  // Uncomment if necessary and properly defined
+            .exec();
+
+        res.json(products);
+    } catch (err) {
+        console.error('Error in handleStar:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 const handleCategory = async (req, res, category) => {
     try {
@@ -230,9 +237,19 @@ const handleCategory = async (req, res, category) => {
         res.status(500).json({ error: 'Failed to fetch products' });
     }
 }
+
+const handleSub = async (req, res, sub) => {
+    const products = await Product.find({subs: sub})
+    .populate("category", "_id name")
+    .populate("subs", "_id name")
+    //.populate("postedBy", "_id name") // Uncomment if 'postedBy' is correctly defined in your schema
+    .exec();
+
+    res.json(products);
+}
   
   exports.searchFilters = async (req, res) => {
-    const { query, price, category, stars } = req.body;
+    const { query, price, category, stars, sub } = req.body;
   
     if (query) {
       console.log("query", query);
@@ -250,7 +267,12 @@ const handleCategory = async (req, res, category) => {
     }
 
     if(stars) {
-        console.log("stars", stars)
+        console.log("stars ", stars)
         await handleStar(req, res, stars)
+    }
+
+    if(sub){
+        console.log("sub ", sub)
+        await handleSub(req, res, sub)
     }
   };

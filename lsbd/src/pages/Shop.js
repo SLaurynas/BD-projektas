@@ -4,6 +4,7 @@ import {
   fetchProductsByFilter,
 } from "../functions/product";
 import { getCategories } from "../functions/category";
+import { getSubs } from "../functions/sub";
 import { useSelector, useDispatch } from "react-redux";
 import ProductCard from "../components/cards/ProductCard";
 import {Menu, Slider, Checkbox} from 'antd'
@@ -19,7 +20,8 @@ const Shop = () => {
   const [ok, setOk] = useState(false);
   const [categories, setCategories] = useState([]);
   const [categoryIds, setCategoryIds] = useState([]);
-  const [star, setStar] = useState('')
+  const [star, setStar] = useState('');
+  const [subs, setSubs] = useState([]);
 
   let dispatch = useDispatch();
   let { search } = useSelector((state) => ({ ...state }));
@@ -35,6 +37,7 @@ const Shop = () => {
     getProductsByCount(12).then((p) => {
       setProducts(p.data);
       setLoading(false);
+      getSubs().then((res) => setSubs(res.data))
     });
   };
 
@@ -64,6 +67,7 @@ const Shop = () => {
         })
         setCategoryIds([]);
         setPrice(value)
+        setStar("")
         setTimeout(() => {
             setOk(!ok)
         },300)
@@ -88,6 +92,7 @@ const Shop = () => {
             payload: {text: ""},
         })
         setPrice([0, 0]);
+        setStar("");
         //console.log(e.target.value)
         let inTheState = [...categoryIds];
         let justChecked = e.target.value;
@@ -103,17 +108,40 @@ const Shop = () => {
         fetchProducts({category: inTheState})
     }
 
-    const handleStarClick = num => {
-        console.log(num)
+    const handleStarClick = (num) => {
+        dispatch({
+            type:"SEARCH_QUERY",
+            payload: {text: ""},
+        })
+        setPrice([0, 0]);
+        setCategoryIds([])
+        setStar(num)
+        fetchProducts({ stars: num})
     }
 
-    const showStars = () => {
+    const showStars = () => (
         <div className="pr-4 pl-4 pb-2">
-            <Star 
-            starClick={handleStarClick}
-            numberOfStars={5}
-            />
+            <Star starClick={handleStarClick} numberOfStars={5}/>
+            <Star starClick={handleStarClick} numberOfStars={4}/>
+            <Star starClick={handleStarClick} numberOfStars={3}/>
+            <Star starClick={handleStarClick} numberOfStars={2}/>
+            <Star starClick={handleStarClick} numberOfStars={1}/>
         </div>
+    );
+    
+    const showSubs = () => 
+    subs.map((s) => 
+    <div 
+    key={s._id}
+    onClick={() => handleSub(s)} 
+    className="p-1 m-1 badge badge-secondary"
+    style={{cursor: 'pointer'}}
+    >
+        {s.name}
+    </div>)
+
+    const handleSub = (s) => {
+        console.log("sub ", s)
     }
 
   return (
@@ -145,6 +173,13 @@ const Shop = () => {
                     <div>
                         <div>
                             {showStars()}
+                        </div>
+                    </div>
+                </SubMenu>
+                <SubMenu key='4' title={<span className="h6"><StarOutlined/> Sub-Categories</span>}>
+                    <div>
+                        <div>
+                            {showSubs()}
                         </div>
                     </div>
                 </SubMenu>
