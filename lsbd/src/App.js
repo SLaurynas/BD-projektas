@@ -3,6 +3,7 @@ import './firebase';
 import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from 'react-toastify';
 
 import Login from './pages/auth/Login';
@@ -27,6 +28,7 @@ import ProductUpdate from './pages/admin/product/ProductUpdate';
 import Product from './pages/Product';
 import CategoryHome from './pages/category/CategoryHome';
 import SubHome from './pages/sub/SubHome';
+import Shop from './pages/Shop';
 
 import { getAuth } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
@@ -138,6 +140,7 @@ const App = () => {
         <Route path="/product/:slug" element={<Product />} />
         <Route path="/category/:slug" element={<CategoryHome />} />
         <Route path="/sub/:slug" element={<SubHome />} />
+        <Route path="/shop" element={<Shop />} />
       </Routes>
     </>
   );

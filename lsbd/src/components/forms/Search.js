@@ -1,6 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Ensure correct import for 'react-router-dom' v6
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { InputGroup, FormControl, Button } from 'react-bootstrap';
 import { SearchOutlined } from '@ant-design/icons';
 
 const Search = () => {
@@ -23,15 +24,18 @@ const Search = () => {
     };
 
     return (
-        <form className='form-inline my-2 my-lg-0' onSubmit={handleSubmit}>
-            <input 
-                onChange={handleChange}
-                type='search' 
-                value={text} 
-                className='form-control mr-sm-2'
-                placeholder='Search'
-            />
-            <SearchOutlined onClick={handleSubmit} style={{ cursor: "pointer" }} />
+        <form onSubmit={handleSubmit} className='d-flex'>
+            <InputGroup>
+                <Button variant="outline-dark" type="submit">
+                    <SearchOutlined />
+                </Button>
+                <FormControl
+                    type='search'
+                    placeholder='Search'
+                    onChange={handleChange}
+                    value={text}
+                />
+            </InputGroup>
         </form>
     );
 };

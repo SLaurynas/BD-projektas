@@ -1,16 +1,10 @@
-import React, { useState } from "react";
-import { Menu } from "antd";
-import {
-  AppstoreOutlined,
-  SettingOutlined,
-  UserOutlined,
-  UserAddOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { signOut, getAuth } from "firebase/auth";
-import Search from "../forms/Search";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { signOut, getAuth } from 'firebase/auth';
+import { Navbar, Nav, NavDropdown, Container, InputGroup, FormControl, Button } from 'react-bootstrap';
+import { ShoppingOutlined, AppstoreOutlined, UserOutlined, UserAddOutlined } from '@ant-design/icons';
+import Search from '../forms/Search'; // Make sure this path is correct
 
 const Header = () => {
   const [current, setCurrent] = useState("home");
@@ -19,86 +13,49 @@ const Header = () => {
   const { user } = useSelector((state) => ({ ...state }));
   const auth = getAuth();
 
-  const handleClick = (e) => {
-    setCurrent(e.key);
-  };
-
   const logout = () => {
-    signOut(auth)
-      .then(() => {
-        dispatch({
-          type: "LOGOUT",
-          payload: null,
-        });
-        navigate("/login");
-      })
-      .catch((error) => {
-        console.error("Logout error:", error);
+    signOut(auth).then(() => {
+      dispatch({
+        type: "LOGOUT",
+        payload: null,
       });
+      navigate("/login");
+    }).catch((err) => {
+      console.error("Logout Error", err);
+    });
   };
-
-  const menuItems = [
-    {
-      label: (<Link to="/">Home</Link>),
-      key: "home",
-      icon: <AppstoreOutlined />,
-    },
-    {
-      label: (<a href="https://ant.design" target="_blank" rel="noopener noreferrer">Cart</a>),
-      key: "cart",
-      icon: <AppstoreOutlined />,
-    },
-    {
-      label: (<span><Search/></span>),
-      key: "search",
-    },
-    // Define other menu items based on if the user is logged in or not.
-    ...(!user ? [
-      {
-        label: (<Link to="/register">Register</Link>),
-        key: "register",
-        icon: <UserAddOutlined />,
-        style: { float: 'right' },
-      },
-      {
-        label: (<Link to="/login">Login</Link>),
-        key: "login",
-        icon: <UserOutlined />,
-        style: { float: 'right' },
-      },
-    ] : []),
-    ...(user ? [
-      {
-        label: user.email && user.email.split("@")[0],
-        key: "SubMenu",
-        icon: <SettingOutlined />,
-        children: [
-          ...(user.role === 'user' ? 
-          [{ label: <Link to="/user/history">History</Link>, key: "history" }] : 
-          []),
-
-          ...(user.role === 'admin' ? 
-          [{ label: <Link to="/admin/dashboard">Dashboard</Link>, 
-          key: "dashboard" }] : 
-          []),
-          
-          { label: 'Logout', 
-          key: 'logout', 
-          icon: <LogoutOutlined />, 
-          onClick: logout 
-          },
-        ],
-      },
-    ] : []),
-  ];
 
   return (
-    <Menu 
-    className="float-left" 
-    onClick={handleClick} 
-    selectedKeys={[current]} 
-    mode="horizontal" 
-    items={menuItems}/>
+    <Navbar bg="light" expand="lg">
+      <Container fluid>
+        <Navbar.Brand as={Link} to="/"> <AppstoreOutlined/> Home</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/shop"><ShoppingOutlined/> Shop</Nav.Link>
+          </Nav>
+          <Nav className="ms-auto">
+          <Search />
+            {!user && (
+              <>
+                <Nav.Link as={Link} to="/register"><UserAddOutlined /> Register</Nav.Link>
+                <Nav.Link as={Link} to="/login"><UserOutlined /> Login</Nav.Link>
+              </>
+            )}
+            {user && (
+              <NavDropdown title={user.email && user.email.split("@")[0]} id="basic-nav-dropdown">
+                <NavDropdown.Item as={Link} to="/user/history">History</NavDropdown.Item>
+                {user.role === 'admin' && (
+                  <NavDropdown.Item as={Link} to="/admin/dashboard">Dashboard</NavDropdown.Item>
+                )}
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+              </NavDropdown>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 };
 
