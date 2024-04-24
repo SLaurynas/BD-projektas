@@ -147,40 +147,79 @@ exports.productStar = async (req, res) => {
 };
 
 exports.getRelated = async (req, res) => {
-    try {
-        const productId = req.params.productId;
-        const product = await Product.findById(productId);  // Find the main product
-
-        if (!product) {
-            return res.status(404).send('Product not found');
-        }
+        const product = await Product.findById(req.params.productId).exec();
         
-        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: productId } })
-            .limit(5)  // Limit the number of related products
+        const relatedProducts = await Product.find({
+             category: product.category, 
+             _id: { $ne: product._id },
+            })
+            .limit(3)
+            .populate('categories')
+            .populate('subs')
+            .populate('postedBy')
             .exec();
 
         res.json(relatedProducts);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: 'Error fetching related products' });
-    }
 };
 
 const handleQuery = async (req, res, query) => {
-    const products = await Product.find({$text: { $search: query}})
-    .populate('category', '_id name')
-    .populate('subs', '_id name')
-    .populate('postedBy', '_id name')
-    .exec();
+    const products = await Product.find({ $text: { $search: query } })
+      .populate("category", "_id name")
+      .populate("subs", "_id name")
+      //.populate("postedBy", "_id name")
+      .exec();
+  
+    res.json(products);
+  };
+
+const handlePrice = async (req, res, price) => {
+    try{
+        let products = await Product.find({
+            price: {
+                $gte: price[0],
+                $lte: price[1],
+            },
+        })
+        .populate("category", "_id name")
+        .populate("subs", "_id name")
+        //.populate("postedBy", "_id name")
+        .exec();
 
     res.json(products);
-}
-
-exports.searchFilters = async (req, res) => {
-    const {query} = req.body
-
-    if(query){
-        console.log('query', query)
-        await handleQuery(req, res, query);
+    }catch(err){
+        console.log(err);
     }
 }
+
+const handleCategory = async (req, res, category) => {
+    try{
+        let products = await Product.find({category})
+        .populate("category", "_id name")
+        .populate("subs", "_id name")
+        //.populate("postedBy", "_id name")
+        .exec();
+
+        res.json(products)
+    }catch{err}{
+        console.log(err)
+    }
+}
+  
+  exports.searchFilters = async (req, res) => {
+    const { query, price, category } = req.body;
+  
+    if (query) {
+      console.log("query", query);
+      await handleQuery(req, res, query);
+    }
+
+    if(price !== undefined){
+        console.log('price', price)
+        await handlePrice(req, res, price)
+    }
+
+    if(category){
+        console.log("category ", category)
+        await handleCategory(req, res, price)
+    }
+  };
