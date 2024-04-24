@@ -191,22 +191,48 @@ const handlePrice = async (req, res, price) => {
     }
 }
 
-const handleCategory = async (req, res, category) => {
-    try{
-        let products = await Product.find({category})
-        .populate("category", "_id name")
-        .populate("subs", "_id name")
-        //.populate("postedBy", "_id name")
-        .exec();
-
+const handleStar = async (req, res, stars) => {
+    Product.aggregate([{
+        $project: {
+            document: "$$ROOT",
+            floorAverage: {
+                $floor: { $avg: "$ratings.star"},
+            },
+        },
+    },
+    {$match: {floorAverage: stars} }
+])
+.limit(12)
+.exec((err, aggregates) => {
+    if(err) console.log('AGGREGATES ERROR', err)
+    Product.find({_id: aggregates})
+    .populate("category", "_id name")
+    .populate("subs", "_id name")
+    //.populate("postedBy", "_id name")
+    .exec((err, products) => {
+        if(err) console.log('PRODUCT AGGREGATE ERROR', err)
         res.json(products)
-    }catch{err}{
-        console.log(err)
+    });
+})
+}
+
+const handleCategory = async (req, res, category) => {
+    try {
+        let products = await Product.find({ category })
+            .populate("category", "_id name")
+            .populate("subs", "_id name")
+            //.populate("postedBy", "_id name") // Uncomment if 'postedBy' is correctly defined in your schema
+            .exec();
+
+        res.json(products);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: 'Failed to fetch products' });
     }
 }
   
   exports.searchFilters = async (req, res) => {
-    const { query, price, category } = req.body;
+    const { query, price, category, stars } = req.body;
   
     if (query) {
       console.log("query", query);
@@ -220,6 +246,11 @@ const handleCategory = async (req, res, category) => {
 
     if(category){
         console.log("category ", category)
-        await handleCategory(req, res, price)
+        await handleCategory(req, res, category)
+    }
+
+    if(stars) {
+        console.log("stars", stars)
+        await handleStar(req, res, stars)
     }
   };
