@@ -145,3 +145,42 @@ exports.productStar = async (req, res) => {
         res.json(ratingUpdated);
     }
 };
+
+exports.getRelated = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const product = await Product.findById(productId);  // Find the main product
+
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+        
+        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: productId } })
+            .limit(5)  // Limit the number of related products
+            .exec();
+
+        res.json(relatedProducts);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: 'Error fetching related products' });
+    }
+};
+
+const handleQuery = async (req, res, query) => {
+    const products = await Product.find({$text: { $search: query}})
+    .populate('category', '_id name')
+    .populate('subs', '_id name')
+    .populate('postedBy', '_id name')
+    .exec();
+
+    res.json(products);
+}
+
+exports.searchFilters = async (req, res) => {
+    const {query} = req.body
+
+    if(query){
+        console.log('query', query)
+        await handleQuery(req, res, query);
+    }
+}

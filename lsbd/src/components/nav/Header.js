@@ -10,6 +10,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signOut, getAuth } from "firebase/auth";
+import Search from "../forms/Search";
 
 const Header = () => {
   const [current, setCurrent] = useState("home");
@@ -46,6 +47,10 @@ const Header = () => {
       label: (<a href="https://ant.design" target="_blank" rel="noopener noreferrer">Cart</a>),
       key: "cart",
       icon: <AppstoreOutlined />,
+    },
+    {
+      label: (<span><Search/></span>),
+      key: "search",
     },
     // Define other menu items based on if the user is logged in or not.
     ...(!user ? [
@@ -88,7 +93,12 @@ const Header = () => {
   ];
 
   return (
-    <Menu className="float-left" onClick={handleClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
+    <Menu 
+    className="float-left" 
+    onClick={handleClick} 
+    selectedKeys={[current]} 
+    mode="horizontal" 
+    items={menuItems}/>
   );
 };
 

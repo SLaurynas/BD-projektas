@@ -28,7 +28,7 @@ const Product = () => {
 
     const loadSingleProduct = () => {
     getProduct(slug).then((res) => {
-       setProduct(res.data)
+       setProduct(res.data);
        getRelated(res.data._id).then((res) => setRelated(res.data))
     });
     }
@@ -60,8 +60,10 @@ const Product = () => {
                     <hr/>
                 </div>
             </div>
-            <div>
-                {related.length ? 'yes' : "no"}
+            <div className='row pb-5'>{related.length 
+            ? related.map((r, ) => 
+            <div key={r._id}><ProductCard product={r}/></div>) 
+            : <div className='text-center col'> No related products yet</div>}
             </div>
         </div>
     );
