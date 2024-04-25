@@ -119,49 +119,57 @@ exports.productsCount = async(req, res) => {
 
 exports.productStar = async (req, res) => {
     const product = await Product.findById(req.params.productId).exec();
-    const user = await User.findOne({email: req.user.email}).exec();
+    const user = await User.findOne({ email: req.user.email }).exec();
     const { star } = req.body;
-
+  
+    // who is updating?
+    // check if currently logged in user have already added rating to this product?
     let existingRatingObject = product.ratings.find(
-        (ele) => ele.postedBy.toString() === user._id.toString()
+      (ele) => ele.postedBy.toString() === user._id.toString()
     );
-
+  
+    // if user haven't left rating yet, push it
     if (existingRatingObject === undefined) {
-        // Corrected the field name to 'ratings'
-        let ratingAdded = await Product.findByIdAndUpdate(product._id, {
-            $push: { ratings: { star, postedBy: user._id } },
-        }, { new: true }).exec();
-        console.log("ratingAdded", ratingAdded);
-        res.json(ratingAdded);
+      let ratingAdded = await Product.findByIdAndUpdate(
+        product._id,
+        {
+          $push: { ratings: { star, postedBy: user._id } },
+        },
+        { new: true }
+      ).exec();
+      console.log("ratingAdded", ratingAdded);
+      res.json(ratingAdded);
     } else {
-        // Update the existing rating
-        const ratingUpdated = await Product.updateOne({
-            _id: product._id,
-            'ratings._id': existingRatingObject._id, // Correctly target the specific rating
-        }, {
-            $set: { 'ratings.$.star': star }, // Update the star value in the existing rating
-        }, { new: true }).exec();
-        console.log("ratingUpdated", ratingUpdated);
-        res.json(ratingUpdated);
+      // if user have already left rating, update it
+      const ratingUpdated = await Product.updateOne(
+        {
+          ratings: { $elemMatch: existingRatingObject },
+        },
+        { $set: { "ratings.$.star": star } },
+        { new: true }
+      ).exec();
+      console.log("ratingUpdated", ratingUpdated);
+      res.json(ratingUpdated);
     }
-};
+  };
+  
 
 exports.getRelated = async (req, res) => {
-        const product = await Product.findById(req.params.productId).exec();
-        
-        const relatedProducts = await Product.find({
-             category: product.category, 
-             _id: { $ne: product._id },
-            })
-            .limit(3)
-            .populate('categories')
-            .populate('subs')
-            .populate('postedBy')
-            .exec();
-
-        res.json(relatedProducts);
-};
-
+    const product = await Product.findById(req.params.productId).exec();
+  
+    const related = await Product.find({
+      _id: { $ne: product._id },
+      category: product.category,
+    })
+      .limit(3)
+      .populate("category")
+      .populate("subs")
+      .populate("postedBy")
+      .exec();
+  
+    res.json(related);
+  };
+  
 const handleQuery = async (req, res, query) => {
     const products = await Product.find({ $text: { $search: query } })
       .populate("category", "_id name")

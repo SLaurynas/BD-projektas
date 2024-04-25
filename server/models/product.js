@@ -62,7 +62,7 @@ const productSchema = new mongoose.Schema({
           star: Number,
           postedBy: { type: ObjectId, ref: "User" },
         },
-      ],
+    ],
     },
     { timestamps: true }
   );  

@@ -22,6 +22,7 @@ const Shop = () => {
   const [categoryIds, setCategoryIds] = useState([]);
   const [star, setStar] = useState('');
   const [subs, setSubs] = useState([]);
+  const [sub, setSub] = useState('');
 
   let dispatch = useDispatch();
   let { search } = useSelector((state) => ({ ...state }));
@@ -30,6 +31,7 @@ const Shop = () => {
   useEffect(() => {
     loadAllProducts();
     getCategories().then((res) => setCategories(res.data))
+    getSubs().then((res) => setSubs(res.data))
   }, []);
 
   // 1. load products by default on page load
@@ -37,7 +39,6 @@ const Shop = () => {
     getProductsByCount(12).then((p) => {
       setProducts(p.data);
       setLoading(false);
-      getSubs().then((res) => setSubs(res.data))
     });
   };
 
@@ -68,6 +69,7 @@ const Shop = () => {
         setCategoryIds([]);
         setPrice(value)
         setStar("")
+        setSub("")
         setTimeout(() => {
             setOk(!ok)
         },300)
@@ -93,6 +95,7 @@ const Shop = () => {
         })
         setPrice([0, 0]);
         setStar("");
+        setSub("");
         //console.log(e.target.value)
         let inTheState = [...categoryIds];
         let justChecked = e.target.value;
@@ -116,6 +119,7 @@ const Shop = () => {
         setPrice([0, 0]);
         setCategoryIds([])
         setStar(num)
+        setSub("")
         fetchProducts({ stars: num})
     }
 
@@ -134,14 +138,23 @@ const Shop = () => {
     <div 
     key={s._id}
     onClick={() => handleSub(s)} 
-    className="p-1 m-1 badge badge-secondary"
+    className="p-1 m-1 badge badge-secondary bg-danger"
     style={{cursor: 'pointer'}}
     >
         {s.name}
     </div>)
 
-    const handleSub = (s) => {
-        console.log("sub ", s)
+    const handleSub = (sub) => {
+        //console.log("sub ", sub)
+        setSub(sub)
+        dispatch({
+            type:"SEARCH_QUERY",
+            payload: {text: ""},
+        })
+        setPrice([0, 0]);
+        setCategoryIds([])
+        setStar("")
+        fetchProducts({ sub })
     }
 
   return (
@@ -149,7 +162,7 @@ const Shop = () => {
       <div className="row">
         <div className="col-md-3 pt-2">
             <h4>Search/Filter</h4>
-            <Menu defaultOpenKeys={['1', '2']} mode="inline">
+            <Menu defaultOpenKeys={['1', '2', '3', '4']} mode="inline">
                 <SubMenu key='1' title={<span className="h6"><EuroOutlined/> Price</span>}>
                     <div>
                         <Slider
