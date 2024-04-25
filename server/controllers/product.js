@@ -119,57 +119,49 @@ exports.productsCount = async(req, res) => {
 
 exports.productStar = async (req, res) => {
     const product = await Product.findById(req.params.productId).exec();
-    const user = await User.findOne({ email: req.user.email }).exec();
+    const user = await User.findOne({email: req.user.email}).exec();
     const { star } = req.body;
-  
-    // who is updating?
-    // check if currently logged in user have already added rating to this product?
+
     let existingRatingObject = product.ratings.find(
-      (ele) => ele.postedBy.toString() === user._id.toString()
+        (ele) => ele.postedBy.toString() === user._id.toString()
     );
-  
-    // if user haven't left rating yet, push it
+
     if (existingRatingObject === undefined) {
-      let ratingAdded = await Product.findByIdAndUpdate(
-        product._id,
-        {
-          $push: { ratings: { star, postedBy: user._id } },
-        },
-        { new: true }
-      ).exec();
-      console.log("ratingAdded", ratingAdded);
-      res.json(ratingAdded);
+        // Corrected the field name to 'ratings'
+        let ratingAdded = await Product.findByIdAndUpdate(product._id, {
+            $push: { ratings: { star, postedBy: user._id } },
+        }, { new: true }).exec();
+        console.log("ratingAdded", ratingAdded);
+        res.json(ratingAdded);
     } else {
-      // if user have already left rating, update it
-      const ratingUpdated = await Product.updateOne(
-        {
-          ratings: { $elemMatch: existingRatingObject },
-        },
-        { $set: { "ratings.$.star": star } },
-        { new: true }
-      ).exec();
-      console.log("ratingUpdated", ratingUpdated);
-      res.json(ratingUpdated);
+        // Update the existing rating
+        const ratingUpdated = await Product.updateOne({
+            _id: product._id,
+            'ratings._id': existingRatingObject._id, // Correctly target the specific rating
+        }, {
+            $set: { 'ratings.$.star': star }, // Update the star value in the existing rating
+        }, { new: true }).exec();
+        console.log("ratingUpdated", ratingUpdated);
+        res.json(ratingUpdated);
     }
-  };
-  
+};
 
 exports.getRelated = async (req, res) => {
-    const product = await Product.findById(req.params.productId).exec();
-  
-    const related = await Product.find({
-      _id: { $ne: product._id },
-      category: product.category,
-    })
-      .limit(3)
-      .populate("category")
-      .populate("subs")
-      .populate("postedBy")
-      .exec();
-  
-    res.json(related);
-  };
-  
+        const product = await Product.findById(req.params.productId).exec();
+
+        const relatedProducts = await Product.find({
+             category: product.category, 
+             _id: { $ne: product._id },
+            })
+            .limit(3)
+            .populate('category')
+            .populate('subs')
+            //.populate('postedBy')
+            .exec();
+
+        res.json(relatedProducts);
+};
+
 const handleQuery = async (req, res, query) => {
     const products = await Product.find({ $text: { $search: query } })
       .populate("category", "_id name")
@@ -255,9 +247,40 @@ const handleSub = async (req, res, sub) => {
 
     res.json(products);
 }
+
+const handleShipping = async (req, res, shipping) => {
+    const products = await Product.find({ shipping })
+      .populate("category", "_id name")
+      .populate("subs", "_id name")
+      //.populate("postedBy", "_id name")
+      .exec();
+  
+    res.json(products);
+  };
+
+const handleStone = async (req, res, stone) => {
+    const products = await Product.find({ stone })
+      .populate("category", "_id name")
+      .populate("subs", "_id name")
+      //.populate("postedBy", "_id name")
+      .exec();
+  
+    res.json(products);
+  };
+  
+  const handleMaterial = async (req, res, material) => {
+    const products = await Product.find({ material })
+      .populate("category", "_id name")
+      .populate("subs", "_id name")
+      //.populate("postedBy", "_id name")
+      .exec();
+  
+    res.json(products);
+  };
+  
   
   exports.searchFilters = async (req, res) => {
-    const { query, price, category, stars, sub } = req.body;
+    const { query, price, category, stars, sub, shipping, stone, material} = req.body;
   
     if (query) {
       console.log("query", query);
@@ -283,4 +306,19 @@ const handleSub = async (req, res, sub) => {
         console.log("sub ", sub)
         await handleSub(req, res, sub)
     }
+    if (shipping) {
+        console.log("shipping ---> ", shipping);
+        await handleShipping(req, res, shipping);
+    }
+    
+      if (stone) {
+        console.log("stone ---> ", stone);
+        await handleStone(req, res, stone);
+      }
+    
+      if (material) {
+        console.log("material ---> ", material);
+        await handleMaterial(req, res, material);
+      }
+    
   };

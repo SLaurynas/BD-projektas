@@ -7,7 +7,7 @@ import { getCategories } from "../functions/category";
 import { getSubs } from "../functions/sub";
 import { useSelector, useDispatch } from "react-redux";
 import ProductCard from "../components/cards/ProductCard";
-import {Menu, Slider, Checkbox} from 'antd'
+import {Menu, Slider, Checkbox, Radio} from 'antd'
 import { EuroOutlined, DownSquareOutlined, StarOutlined } from "@ant-design/icons";
 import Star from "../components/forms/Star";
 
@@ -23,6 +23,20 @@ const Shop = () => {
   const [star, setStar] = useState('');
   const [subs, setSubs] = useState([]);
   const [sub, setSub] = useState('');
+  const [stones, setStones] = useState([
+    "Agate",
+    "Amethyst",
+    "Emerald",
+    "Diamond",
+    "Topaz",
+  ]);
+  const [stone, setStone] = useState("");
+  const [materials, setMaterials] = useState([
+    "Gold",
+    "Silver",
+  ]);
+  const [material, setMaterial] = useState("");
+  const [shipping, setShipping] = useState("");
 
   let dispatch = useDispatch();
   let { search } = useSelector((state) => ({ ...state }));
@@ -66,10 +80,14 @@ const Shop = () => {
             type: "SEARCH_QUERY",
             payload: {text: ""},
         })
+         // reset
         setCategoryIds([]);
-        setPrice(value)
-        setStar("")
-        setSub("")
+        setPrice(value);
+        setStar("");
+        setSub("");
+        setStone("");
+        setMaterial("");
+        setShipping("");
         setTimeout(() => {
             setOk(!ok)
         },300)
@@ -96,6 +114,12 @@ const Shop = () => {
         setPrice([0, 0]);
         setStar("");
         setSub("");
+        setStar("");
+        setSub("");
+        setStone("");
+        setMaterial("");
+        setShipping("");
+
         //console.log(e.target.value)
         let inTheState = [...categoryIds];
         let justChecked = e.target.value;
@@ -117,10 +141,13 @@ const Shop = () => {
             payload: {text: ""},
         })
         setPrice([0, 0]);
-        setCategoryIds([])
-        setStar(num)
-        setSub("")
-        fetchProducts({ stars: num})
+        setCategoryIds([]);
+        setStar(num);
+        setSub("");
+        setStone("");
+        setMaterial("");
+        setShipping("");
+        fetchProducts({ stars: num});
     }
 
     const showStars = () => (
@@ -154,15 +181,113 @@ const Shop = () => {
         setPrice([0, 0]);
         setCategoryIds([])
         setStar("")
+        setStone("");
+        setMaterial("");
+        setShipping("");
         fetchProducts({ sub })
     }
+
+    const showMaterials = () =>
+    materials.map((m) => (
+      <Radio
+        value={m}
+        name={m}
+        checked={m === material}
+        onChange={handleMaterial}
+        className="pb-1 pl-4 pr-4"
+      >
+        {m}
+      </Radio>
+    ));
+
+    const handleMaterial = (m) => {
+      setSub("");
+      dispatch({
+        type: "SEARCH_QUERY",
+        payload: { text: "" },
+      });
+      setPrice([0, 0]);
+      setCategoryIds([]);
+      setStar("");
+      setMaterial("");
+      setStone(m.target.value);
+      setShipping("");
+      fetchProducts({ material: m.target.value });
+    };
+
+    const showStones = () =>
+    stones.map((s) => (
+      <Radio
+        value={s}
+        name={s}
+        checked={s === stone}
+        onChange={handleStone}
+        className="pb-1 pl-4 pr-4"
+      >
+        {s}
+      </Radio>
+    ));
+
+    const handleStone = (s) => {
+      setSub("");
+      dispatch({
+        type: "SEARCH_QUERY",
+        payload: { text: "" },
+      });
+      setPrice([0, 0]);
+      setCategoryIds([]);
+      setStar("");
+      setMaterial("");
+      setStone(s.target.value);
+      setShipping("");
+      fetchProducts({ stone: s.target.value });
+    };
+
+    const showShipping = () => (
+      <>
+        <Checkbox
+          className="pb-2 pl-4 pr-4"
+          onChange={handleShippingchange}
+          value="Yes"
+          checked={shipping === "Yes"}
+        >
+          Yes
+        </Checkbox>
+  
+        <Checkbox
+          className="pb-2 pl-4 pr-4"
+          onChange={handleShippingchange}
+          value="No"
+          checked={shipping === "No"}
+        >
+          No
+        </Checkbox>
+      </>
+    );
+
+    const handleShippingchange = (e) => {
+      setSub("");
+      dispatch({
+        type: "SEARCH_QUERY",
+        payload: { text: "" },
+      });
+      setPrice([0, 0]);
+      setCategoryIds([]);
+      setStar("");
+      setMaterial("");
+      setStone("");
+      setShipping(e.target.value);
+      fetchProducts({ shipping: e.target.value });
+    };
+  
+  
 
   return (
     <div className="container-fluid">
       <div className="row">
         <div className="col-md-3 pt-2">
             <h4>Search/Filter</h4>
-            <Menu defaultOpenKeys={['1', '2', '3', '4']} mode="inline">
+            <Menu defaultOpenKeys={['1', '2', '3', '4','5','6','7']} mode="inline">
                 <SubMenu key='1' title={<span className="h6"><EuroOutlined/> Price</span>}>
                     <div>
                         <Slider
@@ -196,6 +321,42 @@ const Shop = () => {
                         </div>
                     </div>
                 </SubMenu>
+            <SubMenu
+              key="5"
+              title={
+                <span className="h6">
+                  <DownSquareOutlined /> Materials
+                </span>
+              }
+            >
+              <div className="pr-5">
+                {showMaterials()}
+              </div>
+            </SubMenu>
+            <SubMenu
+              key="6"
+              title={
+                <span className="h6">
+                  <DownSquareOutlined /> Stones
+                </span>
+              }
+            >
+              <div className="pr-5">
+                {showStones()}
+              </div>
+            </SubMenu>
+            <SubMenu
+              key="7"
+              title={
+                <span className="h6">
+                  <DownSquareOutlined /> Shipping
+                </span>
+              }
+            >
+              <div style={{ maringTop: "-10px" }} className="pr-5">
+                {showShipping()}
+              </div>
+            </SubMenu>
             </Menu>
         </div>
 

@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Home from './pages/Home';
+import SideDrawer from './components/drawer/SideDrawer';
 import Header from './components/nav/Header';
 import RegisterVerification from './pages/auth/RegisterVerification';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -29,6 +30,8 @@ import Product from './pages/Product';
 import CategoryHome from './pages/category/CategoryHome';
 import SubHome from './pages/sub/SubHome';
 import Shop from './pages/Shop';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 
 import { getAuth } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
@@ -75,6 +78,7 @@ const App = () => {
   return (
     <>
       <Header />
+      <SideDrawer/>
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -141,6 +145,8 @@ const App = () => {
         <Route path="/category/:slug" element={<CategoryHome />} />
         <Route path="/sub/:slug" element={<SubHome />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
     </>
   );
