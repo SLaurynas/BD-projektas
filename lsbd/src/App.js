@@ -32,6 +32,8 @@ import SubHome from './pages/sub/SubHome';
 import Shop from './pages/Shop';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import CreateCouponPage from './pages/admin/coupon/CreateCouponPage';
+import Payment from './pages/Payment';
 
 import { getAuth } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
@@ -146,7 +148,21 @@ const App = () => {
         <Route path="/sub/:slug" element={<SubHome />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout" element={
+        <UserRoute>
+          <Checkout />
+        </UserRoute>
+        }/>
+        <Route path="/admin/coupon" element={
+        <AdminRoute>
+          <CreateCouponPage />
+        </AdminRoute>
+        }/>
+        <Route path="/payment" element={
+          <UserRoute>
+            <Payment />
+          </UserRoute>
+        }/>
       </Routes>
     </>
   );

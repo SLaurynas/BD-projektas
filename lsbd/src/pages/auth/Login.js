@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from 'antd';
 import { GoogleOutlined, LoginOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,95 +11,87 @@ const Login = () => {
   const [password, setPassword] = useState("admin2");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const auth = getAuth();
   const googleAuthProvider = new GoogleAuthProvider();
 
   const {user} = useSelector(state => ({...state}))
 
-  useEffect(() => {
-    let intended = location.state;
-    if (intended) {
-      return;
-    } else {
-      if (user && user.token) navigate("/");
-    }
-  }, [user, navigate, location]);
+    useEffect(()=>{
+        if(user && user.token){
+          roleBasedRedirect(user);
+        }
+    },[user])
 
-  let dispatch = useDispatch();
+    let dispatch = useDispatch();
 
-  const roleBasedRedirect = (res) => {
-    // check if intended
-    let intended = location.state;
-    if (intended) {
-      navigate(intended.from);
-    } else {
-      if (res.data.role === "admin") {
-        navigate("/admin/dashboard");
+    const roleBasedRedirect = (res) => {
+      if (res.data && res.data.role === 'admin') {
+        navigate('/admin/dashboard');
       } else {
-        navigate("/user/history");
+        navigate('/user/history');
       }
     }
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      const { user } = result;
-      const idTokenResult = await user.getIdTokenResult();
-
-      createOrUpdateUser(idTokenResult.token)
-        .then((res) => {
-          dispatch({
-            type: "LOGGED_IN_USER",
-            payload: {
-              name: res.data.name,
-              email: res.data.email,
-              token: idTokenResult.token,
-              role: res.data.role,
-              _id: res.data._id,
-            },
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        // console.log(result);
+        const { user } = result;
+        const idTokenResult = await user.getIdTokenResult();
+  
+        createOrUpdateUser(idTokenResult.token)
+          .then((res) => {
+            dispatch({
+              type: "LOGGED_IN_USER",
+              payload: {
+                name: res.data.name,
+                email: res.data.email,
+                token: idTokenResult.token,
+                role: res.data.role,
+                _id: res.data._id,
+              },
+            });
+            roleBasedRedirect(res);
+          })
+          .catch((err) => console.log(err));
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+      }
+    };
+  
+    const googleLogin = async () => {
+      setLoading(true);
+      try {
+        const result = await signInWithPopup(auth, googleAuthProvider);
+        const { user } = result;
+        const idTokenResult = await user.getIdTokenResult();
+    
+        createOrUpdateUser(idTokenResult.token)
+          .then((res) => {
+            dispatch({
+              type: "LOGGED_IN_USER",
+              payload: {
+                name: res.data.name,
+                email: res.data.email,
+                token: idTokenResult.token,
+                role: res.data.role,
+                _id: res.data._id,
+              },
+            });
+            roleBasedRedirect(res);
+          })
+          .catch((error) => {
+            console.log(error);
           });
-          roleBasedRedirect(res);
-        })
-        .catch((err) => console.log(err));
-    } catch (error) {
-      console.log(error);
+      } catch (error) {
+        console.log(error);
+      }
       setLoading(false);
-    }
-  };
-
-  const googleLogin = async () => {
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleAuthProvider);
-      const { user } = result;
-      const idTokenResult = await user.getIdTokenResult();
-
-      createOrUpdateUser(idTokenResult.token)
-        .then((res) => {
-          dispatch({
-            type: "LOGGED_IN_USER",
-            payload: {
-              name: res.data.name,
-              email: res.data.email,
-              token: idTokenResult.token,
-              role: res.data.role,
-              _id: res.data._id,
-            },
-          });
-          roleBasedRedirect(res);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } catch (error) {
-      console.log(error);
-    }
-    setLoading(false);
-  };
+    };
+    
 
   const loginForm = () => (
     <form onSubmit={handleSubmit}>
@@ -123,14 +115,14 @@ const Login = () => {
       </div>
       <br/>
       <Button 
-        onClick={handleSubmit}
+        onClick={handleSubmit} // Assign the click handler
         type='primary' 
         className='mb-3' 
         block
         shape='round'
         icon={<LoginOutlined />}
         size='large'
-        loading={loading}
+        loading={loading} // Show a loading spinner on the button
         disabled={!email || password.length < 6 || loading}
       > 
         Login
@@ -149,7 +141,7 @@ const Login = () => {
           )}
           {loginForm()}
         <Button 
-            onClick={googleLogin}
+            onClick={googleLogin} // Assign the click handler
             type='primary' 
             danger
             className='mb-3' 
