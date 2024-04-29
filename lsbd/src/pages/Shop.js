@@ -193,6 +193,7 @@ const Shop = () => {
     const showMaterials = () =>
     materials.map((m) => (
       <Radio
+        key={m}
         value={m}
         name={m}
         checked={m === material}
@@ -221,6 +222,7 @@ const Shop = () => {
     const showStones = () =>
     stones.map((s) => (
       <Radio
+        key={s}
         value={s}
         name={s}
         checked={s === stone}
